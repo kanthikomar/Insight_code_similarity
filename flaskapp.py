@@ -1,9 +1,6 @@
 from __future__ import print_function
 from flask import Flask, render_template, request
 import sys
-#from flask.ext.mysqldb import MySQL
-#from flaskext.mysql import MySQL
-#from flask_mysqldb import MySQl
 import pymysql
 import MySQLdb
 import binascii
@@ -14,11 +11,6 @@ app = Flask(__name__)
 @app.route("/", methods = ['POST','GET'])
 def my_form():
         return render_template('first_page.html')
-#@app.route('/result', methods=['POST','GET'])
-#def my_form_post():
-#        if request.method == 'POST':
-#                result = request.form
-#                return render_template("results.html", result = result)
 
 
 
