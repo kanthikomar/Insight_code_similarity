@@ -1,0 +1,32 @@
+<style>
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+    </style>
+        <meta charset="UTF-8">
+        <title>Employees</title>
+        {% if result %}
+
+        {% for row in result %} 
+
+    <table id="employees" style="width:100%"><tbody><tr>
+          <th>CODE ID</th>
+	  <th>REPO NAME</th>
+          <th>CODE PATH</th>
+          </tr><tr>
+          <td> {{ row.id }}</td> 
+          <td> {{ row.sample_repo_name }}</td>
+          <td> {{ row.sample_path }}</td>
+        {% endfor %}
+        {% endif %} 
+        </tr></tbody></table> 
