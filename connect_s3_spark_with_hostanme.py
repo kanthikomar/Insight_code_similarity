@@ -21,38 +21,12 @@ import MySQLdb
 
 
 
-#conf = (SparkConf().setMaster("spark://ec2-34-239-35-112.compute-1.amazonaws.com:7077").setAppName("GDELT-News").set("spark.executor.memory", "6gb"))
-conf = (SparkConf().setMaster("local").setAppName("GDELT-News").set("spark.executor.memory", "6gb"))
-
+conf = (SparkConf().setMaster("spark://ec2-34-239-35-112.compute-1.amazonaws.com:7077").setAppName("GitHub-Data").set("spark.executor.memory", "6gb"))
 sc = SparkContext(conf = conf)
 sqlContext = SQLContext(sc)
-#conf = (SparkConf().setMaster("local").setAppName("SFO_Search").set("spark.exe
-#gdelt_bucket = "s3n://samplecontentrepos/results-20190124-124325_s3.csv"
-gdelt_bucket = "s3n://samplecontentrepos/test000000000000.json"
-#gdelt_bucket = "test.txt"
+gihub_data = "s3n://samplecontentrepos/test*.json"
 df = sqlContext.read.json(gdelt_bucket)
-#df = sqlContext.read.format('com.databricks.spark.csv').option('maxColumns', 2048000).option('header','true').option( "inferschema",'true').option("delimiter" ,',').load(gdelt_bucket)
 df.printSchema()
-#df.select("id").show()
-#df.select("content").show()
-#df.select("sample_path").show()
-#df.select("sample_ref").show()
-#df.select("sample_repo_name").show()
-#spark.read.option("maxColumns", n).csv(...)
-#github  = sqlContext.read.csv(gdelt_bucket, header = True).rdd
-#pattern = r',(?=")'
-#github.map(lambda x: re.split(pattern, x)).collect()
-#print github
-#guthub.take(20).foreach(println)
-#df = sqlContext.read \
-#    .format('com.databricks.spark.csv') \
-#    .options(header='true') \
-#    .options(delimiter=",") \
-#    .load(gdelt_bucket)
-#df.show()
-
-#for row in df.rdd.collect():
-#	print r
 c_backslash = '\\'
 c_dquote = '"'
 c_comment = '#'
@@ -93,23 +67,6 @@ df = df.withColumn('comment_chopped_code', func_udf("content"))
 #df.select('comment_chopped_code').show()
 df.show()
 
-#def createCodeIdCodePathDictionary():
-#   with open(r"results-20190124-124325.csv") as csv_file:
-#        codeIdCodePath = {}
-#        csv_reader = csv.reader(csv_file,delimiter = "," )
-#        count = 0
-#        for row in csv_reader:
-#            if count == 0:
-#                count +=1
-#            else:
-#                temp = []
-#                temp.append(row[5])
-#                temp.append(row[7])
-#                codeIdCodePath[row[0]] = temp
-#    print("dict")
-#    print(codeIdCodePath)
-#    return codeIdCodePath
-
 numHashes = 10;
 #numDocs = 36
 #dataFile = "preprocessed_data.txt"
@@ -118,24 +75,6 @@ numHashes = 10;
 curShingleID = 0
 docsAsShingleSets = {};
 #f = open(dataFile, "r")
-
-#f.close()
-#print('\nShingling ' + str(numDocs) + ' docs took %.2f sec.' % (time.time() - t0))
-#print('\nAverage shingles per doc: %.2f' % (totalShingles / numDocs))
-#numElems = int(numDocs * (numDocs - 1) / 2)
-#JSim = [0 for x in range(numElems)]
-#estJSim = [0 for x in range(numElems)]
-#def getTriangleIndex(i, j):
-#    if i == j:
-#        sys.stderr.write("Can't access triangle matrix with i == j")
-#        sys.exit(1)
-    # If j < i just swap the values.
-#    if j < i:
-#        temp = i
-#        i = j
-#        j = temp
-#
-#    k = int(i * (numDocs - (i + 1) / 2.0) + j - i) - 1
 
 print('\nGenerating random hash functions...')
 maxShingleID = 2 ** 32 - 1
@@ -184,14 +123,6 @@ for i in range(0, len(coeffA)):
 db.commit()
 db.close()
 
-#func_udf1 = udf(creartingCoefficientA, ArrayType(IntegerType()))
-#df = df.withColumn('coeffecientA', func_udf1())
-
-#func_udf2 = udf(creatingCoefficientB, ArrayType(IntegerType()))
-#df = df.withColumn('coeffecientB', func_udf2())
-
-#df.printSchema()
-#df.select('coeffecientB').show()
 
 db = MySQLdb.connect(host = "localhost", user = "root", passwd = "kanthi", db = "insight")
 cur = db.cursor()
@@ -208,25 +139,9 @@ db.close()
 print("getting data from database")
 print(valueA)
 print(valueB)
-#def insert_db(df2):
-#    url = "jdbc:mysql://localhost/insight"
-#    properties = {
-#        "user": "root",
-#        "password": "kanthi",
-#        "driver": "com.mysql.jdbc.Driver"
-#    }
-#    df2.write.jdbc(url=url, table="hash_signatures", mode='overwrite', properties = properties)
 
-
-#writeData = df.select("id", "sample_repo_name", "sample_path", df.ten_signatur$
-
-
-
-
-#allCoeff = coeffA + coeffB
 print('\nGenerating MinHash signatures for all documents...')
-#codeIdPath = createCodeIdCodePathDictionary()
-# List of documents represented as signature vectors
+
 signatures = []
 #docIdList = []
 
@@ -273,40 +188,13 @@ def generate_shingel_minhash(content):
 	elapsed = (time.time() - t0)
 	return signature
 	#print(signatures)
-#db = MySQLdb.connect(host = "localhost", user = "kanthi_db", 
-#cur = db.cursor()
-#cur.execute("show tables")
-#for row in cur.fetchall():
-#   print row[0]
 
-#for item in signatures:
-#		sql = "insert into hash_signatures (code_id,repo_name, code_path,signature1,signature2, signature3, signature4, signature5,signature6,signature7,signature8, signature9,signature10) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-#		val = (item[0], item[1], item[2], item[3], item[4], item[5],item[6], item[7], item[8], item[9], item[10], item[11], item[12])
-#		cur.execute(sql,val)
-#for i in range(0, 10):
-#		sql = "insert into randomly_generated_values(hashid, value_a, value_b) values (%s,%s,%s)"
-#		val = (i+1, allCoeff[i], allCoeff[i+10])
-#		cur.execute(sql,val)
-#db.commit()
-
-#db.close()
 func_udf = udf(generate_shingel_minhash, ArrayType(LongType()))
 df = df.withColumn('ten_signatures', func_udf("content"))
 #df.select('ten_signatures').show()
 
 
-#hostname = "localhost"
-#dbname = "insight"
-#jdbcPort = "3306"
-#username = "root"
-#password = "kanthi"
-#jdbc_url = "jdbc:mysql://{0}:{1}/{2}?user={3}&password={4}".format(hostname,jdbcPort,dbname,username,password)
-#query = "(select * from randomly_generated_values) new_column"
-#df1 = sqlContext.read.format('jdbc').options(driver = 'com.mysql.jdbc.Driver',url=jdbc_url, dbtable=query).load()
-#df1.show()
-#conf = (SparkConf().setMaster("local").setAppName("SFO_Search").set("spark.executor.memory", "6gb"))
-#sc = SparkContext(conf = conf)
-#sqlContext = SQLContext(sc)
+
 df.printSchema()
 def insert_db(df2):
     url = "jdbc:mysql://localhost/insight"
@@ -318,9 +206,4 @@ def insert_db(df2):
     df2.write.jdbc(url=url, table="hash_signatures", mode='overwrite', properties=properties)
 
 writeData = df.select("id", "sample_repo_name", "sample_path", df.ten_signatures[0], df.ten_signatures[1], df.ten_signatures[2], df.ten_signatures[3], df.ten_signatures[4], df.ten_signatures[5], df.ten_signatures[6], df.ten_signatures[7], df.ten_signatures[8], df.ten_signatures[9])
-#writeData.write.jdbc(table="hash_signatures", properties= properties, mode = "append")
-
-#df = DataFrame([{'apple','122','121'}, {'banana', '112', '121'}], columns=["h$
-#df2 = [{'hashid':'pineapple', 'value_a': 1212, 'value_b': 4654}]
-#sdf = sqlContext.createDataFrame(df2)
 insert_db(writeData)
