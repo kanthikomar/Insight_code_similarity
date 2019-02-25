@@ -4,7 +4,7 @@ import sys
 import pymysql
 import MySQLdb
 import binascii
-
+import configparser
 
 app = Flask(__name__)
 
@@ -12,17 +12,13 @@ app = Flask(__name__)
 def my_form():
         return render_template('first_page.html')
 
-
-
-
-
 class Database:
         def __init__(self):
-                host = "localhost"
-                user = "root"
-                password = "kanthi"
-                db = "insight"
-                self.con = pymysql.connect(host=host, user=user, password=password,db=db, cursorclass=pymysql.cursors.DictCursor) 
+                self.config = configparser.ConfigParser()
+                self.config.read('config.ini')
+                self.con = pymysql.connect(host=self.config['mysqlDB']['host'], user=self.config['mysqlDB']['user'],
+                           password=self.config['mysqlDB']['pass'],db=self.config['mysqlDB']['db'],
+                                           cursorclass=pymysql.cursors.DictCursor)
                 self.cur = self.con.cursor()
         def list_atrributes(self):
                 self.cur.execute("select id, sample_repo_name, sample_path from hash_signatures limit 10")
@@ -64,8 +60,8 @@ def chop_comment(allLine):
         return editedLine
 
 numHashes = 10
-db = MySQLdb.connect(host = "localhost",user = "root",passwd = "kanthi",db = 'insight')
-cur = db.cursor()
+db = Database()
+cur = db.cur
 sql = "select hashid, value_a, value_b from  randomly_generated_values"
 cur.execute(sql)
 coefficients = cur.fetchall()
@@ -90,15 +86,15 @@ def generate_shingel_minhash(content):
                 crc = binascii.crc32(shingle) & 0xffffffff
                 shinglesInDoc.add(crc)
         totalShingles = totalShingles + (len(words) - 2)
-	uniqueShingles = len(shinglesInDoc)
+        uniqueShingles = len(shinglesInDoc)
     # The resulting minhash signature for this document.
         signature = []
         for i in range(0, numHashes):
                 minHashCode = nextPrime + 1
                 for shingleID in shinglesInDoc:
                         hashCode = (valueA[i] * shingleID + valueB[i]) % nextPrime
-               		if hashCode < minHashCode:
-                        	minHashCode = hashCode
+                    if hashCode < minHashCode:
+                        minHashCode = hashCode
                 signature.append(minHashCode)
     #signatures.append(signature)
        # elapsed = (time.time() - t0)
@@ -107,39 +103,39 @@ def generate_shingel_minhash(content):
 @app.route('/result', methods = ['POST','GET'] )
 def employees():
 
-        def db_query():
-                db = Database()
-                emps = db.list_atrributes()
-                return emps
-	if request.method == 'POST':
-       		 res = db_query()
-		 result = request.form['code']
-		 commentChoppedCode = chop_comment(result)
-		 signatureList =  generate_shingel_minhash(commentChoppedCode)
-		 db = MySQLdb.connect(host = "localhost",user = "root",passwd = "kanthi",db = 'insight')
-		 cur = db.cursor()
-		 sql = "select * from hash_signatures"
-		 cur.execute(sql)
-		 numRows = cur.rowcount
-		 for x in xrange(0, numRows):
-			eachCodeSignatures = []
-			row = cur.fetchone()
-			eachCodeSignatures.append(row[3])
-			eachCodeSignatures.append(row[4])
-			eachCodeSignatures.append(row[5])
-			eachCodeSignatures.append(row[6])
-			eachCodeSignatures.append(row[7])
-			eachCodeSignatures.append(row[8])
-			eachCodeSignatures.append(row[9])
-			eachCodeSignatures.append(row[10])
-			eachCodeSignatures.append(row[11])
-			eachCodeSignatures.append(row[12])
-			estimatedSimilarity = len(set(eachCodeSignatures)) and  len(set(signatureList))
-			similarityPercentage = estimatedSimilarity/10
-			if (similarityPercentage >= 0.5):
-				return '''<h1> the result is : {}{}{}</h1>'''.format(row[0], row[1], row[2])
-			else:
-				return '''<h1> none </h1>'''
+    def db_query():
+            db = Database()
+            emps = db.list_atrributes()
+            return emps
+    if request.method == 'POST':
+        res = db_query()
+        result = request.form['code']
+        commentChoppedCode = chop_comment(result)
+        signatureList =  generate_shingel_minhash(commentChoppedCode)
+        db = Database()
+        cur = db.cur
+        sql = "select * from hash_signatures"
+        cur.execute(sql)
+        numRows = cur.rowcount
+        for x in xrange(0, numRows):
+            eachCodeSignatures = []
+            row = cur.fetchone()
+            eachCodeSignatures.append(row[3])
+            eachCodeSignatures.append(row[4])
+            eachCodeSignatures.append(row[5])
+            eachCodeSignatures.append(row[6])
+            eachCodeSignatures.append(row[7])
+            eachCodeSignatures.append(row[8])
+            eachCodeSignatures.append(row[9])
+            eachCodeSignatures.append(row[10])
+            eachCodeSignatures.append(row[11])
+            eachCodeSignatures.append(row[12])
+            estimatedSimilarity = len(set(eachCodeSignatures)) and  len(set(signatureList))
+            similarityPercentage = estimatedSimilarity/10
+            if (similarityPercentage >= 0.5):
+                return '''<h1> the result is : {}{}{}</h1>'''.format(row[0], row[1], row[2])
+            else:
+                return '''<h1> none </h1>'''
 
 		# return.format(commentChoppedCode)
        		# return render_template('check.html', result=commentChoppedCode, content_type='application/json')

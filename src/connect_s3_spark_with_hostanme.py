@@ -18,8 +18,8 @@ import random
 import time
 import binascii
 import MySQLdb
-
-
+from .flaskapp import Database
+import configparser
 
 conf = (SparkConf().setMaster("spark://ec2-34-239-35-112.compute-1.amazonaws.com:7077").setAppName("GitHub-Data").set("spark.executor.memory", "6gb"))
 sc = SparkContext(conf = conf)
@@ -109,8 +109,8 @@ def creatingCoefficientB():
 
 coeffA = creartingCoefficientA()
 coeffB = creatingCoefficientB()
-db = MySQLdb.connect(host = "localhost",user = "root",passwd = "kanthi",db = 'insight')
-cur = db.cursor()
+db = Database()
+cur = db.cur
 #cur.execute("show tables")
 #for row in cur.fetchall():
 #   print row[0]
@@ -124,7 +124,7 @@ db.commit()
 db.close()
 
 
-db = MySQLdb.connect(host = "localhost", user = "root", passwd = "kanthi", db = "insight")
+db = Database()
 cur = db.cursor()
 sql = "select hashid, value_a, value_b from  randomly_generated_values"
 cur.execute(sql)
@@ -197,13 +197,15 @@ df = df.withColumn('ten_signatures', func_udf("content"))
 
 df.printSchema()
 def insert_db(df2):
-    url = "jdbc:mysql://localhost/insight"
-    properties = {
-        "user": "root",
-        "password": "kanthi",
-        "driver": "com.mysql.jdbc.Driver"
+	config = configparser.ConfigParser()
+	config.read('config.ini')
+	url = "jdbc:mysql://localhost/insight"
+	properties = {
+        "user": config['mysqlDB']['user'],
+        "password": config['mysqlDB']['pass'],
+        "driver": config['mysqlDB']['driver']
     }
-    df2.write.jdbc(url=url, table="hash_signatures", mode='overwrite', properties=properties)
+	df2.write.jdbc(url=url, table="hash_signatures", mode='overwrite', properties=properties)
 
 writeData = df.select("id", "sample_repo_name", "sample_path", df.ten_signatures[0], df.ten_signatures[1], df.ten_signatures[2], df.ten_signatures[3], df.ten_signatures[4], df.ten_signatures[5], df.ten_signatures[6], df.ten_signatures[7], df.ten_signatures[8], df.ten_signatures[9])
 insert_db(writeData)
